@@ -37,7 +37,7 @@ The candidate keys are:
 - Email
 - Phone
 
-These attributes can uniquely identify an employee and are minimal superkeys.
+These attributes can uniquely identify an employee based on the given information and are minimal superkeys.
 
 ### 3. Primary Key
 

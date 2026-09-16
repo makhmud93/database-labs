@@ -24,7 +24,7 @@ At least 6 superkeys are:
 1. {EmpID}
 2. {SSN}
 3. {Email}
-4. {Phone}
+4. {Email,SSN}
 5. {EmpID, SSN}
 6. {EmpID, Email}
 
@@ -35,7 +35,7 @@ The candidate keys are:
 - EmpID
 - SSN
 - Email
-- Phone
+  
 
 These attributes can uniquely identify an employee based on the given information and are minimal superkeys.
 

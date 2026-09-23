@@ -1,19 +1,8 @@
--- Laboratory Work #2: Advanced DDL Operations
--- Topic: Database Creation, Table Management & Data Types
--- Student: Makhmud Tursynbai
--- PostgreSQL
---
--- IMPORTANT:
--- 1. Run the database/tablespace section with a PostgreSQL account that has
---    CREATEDB/CREATE TABLESPACE privileges.
--- 2. Tablespace directories must already exist on the PostgreSQL server and
---    be writable by the PostgreSQL server OS user:
---       /data/students
---       /data/courses
--- 3. In DataGrip, database-level CREATE/DROP statements may require running
---    the first section while connected to the postgres/default database.
--- 4. After creating university_main, reconnect to university_main before
---    running the table sections.
+-- LABORATORY WORK #2
+-- Advanced DDL Operations
+-- Database Creation, Table Management & Data Types
+-- ============================================================
+
 
 -- ============================================================
 -- PART 1: MULTIPLE DATABASE MANAGEMENT
@@ -21,53 +10,51 @@
 
 -- Task 1.1: Database Creation with Parameters
 
-DROP DATABASE IF EXISTS university_test;
-DROP DATABASE IF EXISTS university_distributed;
-DROP DATABASE IF EXISTS university_archive;
-DROP DATABASE IF EXISTS university_main;
-
 CREATE DATABASE university_main
-    WITH
+WITH
     OWNER = CURRENT_USER
     TEMPLATE = template0
     ENCODING = 'UTF8';
 
+
 CREATE DATABASE university_archive
-    WITH
+WITH
     OWNER = CURRENT_USER
     TEMPLATE = template0
     ENCODING = 'UTF8'
     CONNECTION LIMIT = 50;
 
+
 CREATE DATABASE university_test
-    WITH
+WITH
     OWNER = CURRENT_USER
     TEMPLATE = template0
     ENCODING = 'UTF8'
     IS_TEMPLATE = true
     CONNECTION LIMIT = 10;
 
--- Task 1.2: Tablespace Operations
--- The directories must exist on the database server before these commands.
--- CREATE TABLESPACE student_data LOCATION '/data/students';
--- CREATE TABLESPACE course_data LOCATION '/data/courses';
 
--- Uncomment the two commands above when the directories are configured.
--- Then create the distributed database:
---
--- CREATE DATABASE university_distributed
---     WITH
---     OWNER = CURRENT_USER
---     TEMPLATE = template0
---     ENCODING = 'LATIN9'
---     TABLESPACE = student_data;
+-- Task 1.2: Tablespace Operations
+
+CREATE TABLESPACE student_data
+LOCATION '/data/students';
+
+
+CREATE TABLESPACE course_data
+OWNER CURRENT_USER
+LOCATION '/data/courses';
+
+
+CREATE DATABASE university_distributed
+WITH
+    OWNER = CURRENT_USER
+    TEMPLATE = template0
+    ENCODING = 'LATIN9'
+    TABLESPACE = student_data;
 
 
 -- ============================================================
--- CONNECT TO university_main BEFORE PART 2
--- In psql:
--- \connect university_main
--- In DataGrip: select university_main as the active database.
+-- CONNECT TO university_main DATABASE
 -- ============================================================
 
 
@@ -77,66 +64,72 @@ CREATE DATABASE university_test
 
 -- Task 2.1: University Management System
 
+
 CREATE TABLE students (
-    student_id serial PRIMARY KEY,
-    first_name varchar(50),
-    last_name varchar(50),
-    email varchar(100),
-    phone char(15),
-    date_of_birth date,
-    enrollment_date date,
-    gpa decimal(3,2),
-    is_active boolean,
-    graduation_year smallint
+    student_id SERIAL PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    email VARCHAR(100),
+    phone CHAR(15),
+    date_of_birth DATE,
+    enrollment_date DATE,
+    gpa DECIMAL(3,2),
+    is_active BOOLEAN,
+    graduation_year SMALLINT
 );
+
 
 CREATE TABLE professors (
-    professor_id serial PRIMARY KEY,
-    first_name varchar(50),
-    last_name varchar(50),
-    email varchar(100),
-    office_number varchar(20),
-    hire_date date,
-    salary numeric(12,2),
-    is_tenured boolean,
-    years_experience integer
+    professor_id SERIAL PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    email VARCHAR(100),
+    office_number VARCHAR(20),
+    hire_date DATE,
+    salary NUMERIC(12,2),
+    is_tenured BOOLEAN,
+    years_experience INTEGER
 );
 
+
 CREATE TABLE courses (
-    course_id serial PRIMARY KEY,
-    course_code char(8),
-    course_title varchar(100),
-    description text,
-    credits smallint,
-    max_enrollment integer,
-    course_fee decimal(10,2),
-    is_online boolean,
-    created_at timestamp without time zone
+    course_id SERIAL PRIMARY KEY,
+    course_code CHAR(8),
+    course_title VARCHAR(100),
+    description TEXT,
+    credits SMALLINT,
+    max_enrollment INTEGER,
+    course_fee DECIMAL(10,2),
+    is_online BOOLEAN,
+    created_at TIMESTAMP WITHOUT TIME ZONE
 );
+
 
 -- Task 2.2: Time-based and Specialized Tables
 
+
 CREATE TABLE class_schedule (
-    schedule_id serial PRIMARY KEY,
-    course_id integer,
-    professor_id integer,
-    classroom varchar(20),
-    class_date date,
-    start_time time without time zone,
-    end_time time without time zone,
-    duration interval
+    schedule_id SERIAL PRIMARY KEY,
+    course_id INTEGER,
+    professor_id INTEGER,
+    classroom VARCHAR(20),
+    class_date DATE,
+    start_time TIME WITHOUT TIME ZONE,
+    end_time TIME WITHOUT TIME ZONE,
+    duration INTERVAL
 );
 
+
 CREATE TABLE student_records (
-    record_id serial PRIMARY KEY,
-    student_id integer,
-    course_id integer,
-    semester varchar(20),
-    year integer,
-    grade char(2),
-    attendance_percentage decimal(4,1),
-    submission_timestamp timestamp with time zone,
-    last_updated timestamp with time zone
+    record_id SERIAL PRIMARY KEY,
+    student_id INTEGER,
+    course_id INTEGER,
+    semester VARCHAR(20),
+    year INTEGER,
+    grade CHAR(2),
+    attendance_percentage DECIMAL(4,1),
+    submission_timestamp TIMESTAMP WITH TIME ZONE,
+    last_updated TIMESTAMP WITH TIME ZONE
 );
 
 
@@ -146,88 +139,117 @@ CREATE TABLE student_records (
 
 -- Task 3.1: Modifying Existing Tables
 
--- students
-ALTER TABLE students
-    ADD COLUMN middle_name varchar(30);
+
+-- Modify students table
 
 ALTER TABLE students
-    ADD COLUMN student_status varchar(20);
+ADD COLUMN middle_name VARCHAR(30);
+
 
 ALTER TABLE students
-    ALTER COLUMN phone TYPE varchar(20);
+ADD COLUMN student_status VARCHAR(20);
+
 
 ALTER TABLE students
-    ALTER COLUMN student_status SET DEFAULT 'ACTIVE';
+ALTER COLUMN phone TYPE VARCHAR(20);
+
 
 ALTER TABLE students
-    ALTER COLUMN gpa SET DEFAULT 0.00;
+ALTER COLUMN student_status SET DEFAULT 'ACTIVE';
 
--- professors
-ALTER TABLE professors
-    ADD COLUMN department_code char(5);
 
-ALTER TABLE professors
-    ADD COLUMN research_area text;
+ALTER TABLE students
+ALTER COLUMN gpa SET DEFAULT 0.00;
 
-ALTER TABLE professors
-    ALTER COLUMN years_experience TYPE smallint;
+
+-- Modify professors table
 
 ALTER TABLE professors
-    ALTER COLUMN is_tenured SET DEFAULT false;
+ADD COLUMN department_code CHAR(5);
+
 
 ALTER TABLE professors
-    ADD COLUMN last_promotion_date date;
+ADD COLUMN research_area TEXT;
 
--- courses
+
+ALTER TABLE professors
+ALTER COLUMN years_experience TYPE SMALLINT;
+
+
+ALTER TABLE professors
+ALTER COLUMN is_tenured SET DEFAULT FALSE;
+
+
+ALTER TABLE professors
+ADD COLUMN last_promotion_date DATE;
+
+
+-- Modify courses table
+
 ALTER TABLE courses
-    ADD COLUMN prerequisite_course_id integer;
+ADD COLUMN prerequisite_course_id INTEGER;
+
 
 ALTER TABLE courses
-    ADD COLUMN difficulty_level smallint;
+ADD COLUMN difficulty_level SMALLINT;
+ALTER TABLE courses
+ALTER COLUMN course_code TYPE VARCHAR(10);
+
 
 ALTER TABLE courses
-    ALTER COLUMN course_code TYPE varchar(10);
+ALTER COLUMN credits SET DEFAULT 3;
+
 
 ALTER TABLE courses
-    ALTER COLUMN credits SET DEFAULT 3;
-
-ALTER TABLE courses
-    ADD COLUMN lab_required boolean DEFAULT false;
+ADD COLUMN lab_required BOOLEAN DEFAULT FALSE;
 
 
+-- ============================================================
 -- Task 3.2: Column Management Operations
+-- ============================================================
 
--- class_schedule
-ALTER TABLE class_schedule
-    ADD COLUMN room_capacity integer;
-
-ALTER TABLE class_schedule
-    DROP COLUMN duration;
+-- Modify class_schedule table
 
 ALTER TABLE class_schedule
-    ADD COLUMN session_type varchar(15);
+ADD COLUMN room_capacity INTEGER;
+
 
 ALTER TABLE class_schedule
-    ALTER COLUMN classroom TYPE varchar(30);
+DROP COLUMN duration;
+
 
 ALTER TABLE class_schedule
-    ADD COLUMN equipment_needed text;
+ADD COLUMN session_type VARCHAR(15);
 
--- student_records
-ALTER TABLE student_records
-    ADD COLUMN extra_credit_points decimal(4,1);
 
-ALTER TABLE student_records
-    ALTER COLUMN grade TYPE varchar(5);
+ALTER TABLE class_schedule
+ALTER COLUMN classroom TYPE VARCHAR(30);
 
-ALTER TABLE student_records
-    ALTER COLUMN extra_credit_points SET DEFAULT 0.0;
 
-ALTER TABLE student_records
-    ADD COLUMN final_exam_date date;
+ALTER TABLE class_schedule
+ADD COLUMN equipment_needed TEXT;
+
+
+-- Modify student_records table
 
 ALTER TABLE student_records
-    DROP COLUMN last_updated;
+ADD COLUMN extra_credit_points DECIMAL(4,1);
+
+
+ALTER TABLE student_records
+ALTER COLUMN grade TYPE VARCHAR(5);
+
+
+ALTER TABLE student_records
+ALTER COLUMN extra_credit_points SET DEFAULT 0.0;
+
+
+ALTER TABLE student_records
+ADD COLUMN final_exam_date DATE;
+
+
+ALTER TABLE student_records
+DROP COLUMN last_updated;
 
 
 -- ============================================================
@@ -236,68 +258,84 @@ ALTER TABLE student_records
 
 -- Task 4.1: Additional Supporting Tables
 
+
 CREATE TABLE departments (
-    department_id serial PRIMARY KEY,
-    department_name varchar(100),
-    department_code char(5),
-    building varchar(50),
-    phone varchar(15),
-    budget numeric(15,2),
-    established_year integer
+    department_id SERIAL PRIMARY KEY,
+    department_name VARCHAR(100),
+    department_code CHAR(5),
+    building VARCHAR(50),
+    phone VARCHAR(15),
+    budget NUMERIC(15,2),
+    established_year INTEGER
 );
+
 
 CREATE TABLE library_books (
-    book_id serial PRIMARY KEY,
-    isbn char(13),
-    title varchar(200),
-    author varchar(100),
-    publisher varchar(100),
-    publication_date date,
-    price decimal(10,2),
-    is_available boolean,
-    acquisition_timestamp timestamp without time zone
+    book_id SERIAL PRIMARY KEY,
+    isbn CHAR(13),
+    title VARCHAR(200),
+    author VARCHAR(100),
+    publisher VARCHAR(100),
+    publication_date DATE,
+    price DECIMAL(10,2),
+    is_available BOOLEAN,
+    acquisition_timestamp TIMESTAMP WITHOUT TIME ZONE
 );
 
+
 CREATE TABLE student_book_loans (
-    loan_id serial PRIMARY KEY,
-    student_id integer,
-    book_id integer,
-    loan_date date,
-    due_date date,
-    return_date date,
-    fine_amount decimal(10,2),
-    loan_status varchar(20)
+    loan_id SERIAL PRIMARY KEY,
+    student_id INTEGER,
+    book_id INTEGER,
+    loan_date DATE,
+    due_date DATE,
+    return_date DATE,
+    fine_amount DECIMAL(10,2),
+    loan_status VARCHAR(20)
 );
+
 
 -- Task 4.2: Table Modifications for Integration
 
+-- Add department_id to professors
+
 ALTER TABLE professors
-    ADD COLUMN department_id integer;
+ADD COLUMN department_id INTEGER;
+
+
+-- Add advisor_id to students
 
 ALTER TABLE students
-    ADD COLUMN advisor_id integer;
+ADD COLUMN advisor_id INTEGER;
+
+
+-- Add department_id to courses
 
 ALTER TABLE courses
-    ADD COLUMN department_id integer;
+ADD COLUMN department_id INTEGER;
 
--- Lookup tables
+
+-- Create grade_scale table
 
 CREATE TABLE grade_scale (
-    grade_id serial PRIMARY KEY,
-    letter_grade char(2),
-    min_percentage decimal(4,1),
-    max_percentage decimal(4,1),
-    gpa_points decimal(3,2)
+    grade_id SERIAL PRIMARY KEY,
+    letter_grade CHAR(2),
+    min_percentage DECIMAL(4,1),
+    max_percentage DECIMAL(4,1),
+    gpa_points DECIMAL(3,2)
 );
 
+
+-- Create semester_calendar table
+
 CREATE TABLE semester_calendar (
-    semester_id serial PRIMARY KEY,
-    semester_name varchar(20),
-    academic_year integer,
-    start_date date,
-    end_date date,
-    registration_deadline timestamp with time zone,
-    is_current boolean
+    semester_id SERIAL PRIMARY KEY,
+    semester_name VARCHAR(20),
+    academic_year INTEGER,
+    start_date DATE,
+    end_date DATE,
+    registration_deadline TIMESTAMP WITH TIME ZONE,
+    is_current BOOLEAN
 );
 
 
@@ -307,73 +345,61 @@ CREATE TABLE semester_calendar (
 
 -- Task 5.1: Conditional Table Operations
 
+
 DROP TABLE IF EXISTS student_book_loans;
+
+
 DROP TABLE IF EXISTS library_books;
+
+
 DROP TABLE IF EXISTS grade_scale;
 
--- Recreate grade_scale with the additional description column
+
+-- Recreate grade_scale with description column
 
 CREATE TABLE grade_scale (
-    grade_id serial PRIMARY KEY,
-    letter_grade char(2),
-    min_percentage decimal(4,1),
-    max_percentage decimal(4,1),
-    gpa_points decimal(3,2),
-    description text
+    grade_id SERIAL PRIMARY KEY,
+    letter_grade CHAR(2),
+    min_percentage DECIMAL(4,1),
+    max_percentage DECIMAL(4,1),
+    gpa_points DECIMAL(3,2),
+    description TEXT
 );
 
--- Drop and recreate semester_calendar with CASCADE
+
+-- Drop semester_calendar with CASCADE
 
 DROP TABLE IF EXISTS semester_calendar CASCADE;
 
+
+-- Recreate semester_calendar
+
 CREATE TABLE semester_calendar (
-    semester_id serial PRIMARY KEY,
-    semester_name varchar(20),
-    academic_year integer,
-    start_date date,
-    end_date date,
-    registration_deadline timestamp with time zone,
-    is_current boolean
+    semester_id SERIAL PRIMARY KEY,
+    semester_name VARCHAR(20),
+    academic_year INTEGER,
+    start_date DATE,
+    end_date DATE,
+    registration_deadline TIMESTAMP WITH TIME ZONE,
+    is_current BOOLEAN
 );
 
 
--- Task 5.2: Database Cleanup
---
--- These commands must be run from another database (for example postgres),
--- NOT while connected to the database being dropped.
---
--- DROP DATABASE IF EXISTS university_test;
--- DROP DATABASE IF EXISTS university_distributed;
--- CREATE DATABASE university_backup
---     WITH
---     OWNER = CURRENT_USER
---     TEMPLATE = university_main;
-
-
 -- ============================================================
--- OPTIONAL VERIFICATION QUERIES
+-- Task 5.2: DATABASE CLEANUP
 -- ============================================================
 
--- Check created tables:
--- SELECT table_name
--- FROM information_schema.tables
--- WHERE table_schema = 'public'
--- ORDER BY table_name;
+-- These commands must be executed while connected
+-- to another database, for example "postgres".
+DROP DATABASE IF EXISTS university_test;
 
--- Check students columns:
--- SELECT column_name, data_type, character_maximum_length
--- FROM information_schema.columns
--- WHERE table_name = 'students'
--- ORDER BY ordinal_position;
 
--- Check professors columns:
--- SELECT column_name, data_type, character_maximum_length
--- FROM information_schema.columns
--- WHERE table_name = 'professors'
--- ORDER BY ordinal_position;
+DROP DATABASE IF EXISTS university_distributed;
 
--- Check courses columns:
--- SELECT column_name, data_type, character_maximum_length
--- FROM information_schema.columns
--- WHERE table_name = 'courses'
--- ORDER BY ordinal_position;
+
+CREATE DATABASE university_backup
+WITH
+    OWNER = CURRENT_USER
+    TEMPLATE = university_main;
+
+

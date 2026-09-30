@@ -1,405 +1,45 @@
--- LABORATORY WORK #2
--- Advanced DDL Operations
--- Database Creation, Table Management & Data Types
--- ============================================================
-
-
--- ============================================================
--- PART 1: MULTIPLE DATABASE MANAGEMENT
--- ============================================================
-
--- Task 1.1: Database Creation with Parameters
-
-CREATE DATABASE university_main
-WITH
-    OWNER = CURRENT_USER
-    TEMPLATE = template0
-    ENCODING = 'UTF8';
-
-
-CREATE DATABASE university_archive
-WITH
-    OWNER = CURRENT_USER
-    TEMPLATE = template0
-    ENCODING = 'UTF8'
-    CONNECTION LIMIT = 50;
-
-
-CREATE DATABASE university_test
-WITH
-    OWNER = CURRENT_USER
-    TEMPLATE = template0
-    ENCODING = 'UTF8'
-    IS_TEMPLATE = true
-    CONNECTION LIMIT = 10;
-
-
--- Task 1.2: Tablespace Operations
-
-CREATE TABLESPACE student_data
-LOCATION '/data/students';
-
-
-CREATE TABLESPACE course_data
-OWNER CURRENT_USER
-LOCATION '/data/courses';
-
-
-CREATE DATABASE university_distributed
-WITH
-    OWNER = CURRENT_USER
-    TEMPLATE = template0
-    ENCODING = 'LATIN9'
-    TABLESPACE = student_data;
-
-
--- ============================================================
--- CONNECT TO university_main DATABASE
--- ============================================================
-
-
--- ============================================================
--- PART 2: COMPLEX TABLE CREATION
--- ============================================================
-
--- Task 2.1: University Management System
-
-
-CREATE TABLE students (
-    student_id SERIAL PRIMARY KEY,
-    first_name VARCHAR(50),
-    last_name VARCHAR(50),
-    email VARCHAR(100),
-    phone CHAR(15),
-    date_of_birth DATE,
-    enrollment_date DATE,
-    gpa DECIMAL(3,2),
-    is_active BOOLEAN,
-    graduation_year SMALLINT
+-- Task 1: Conditional INSERT
+INSERT INTO employees (first_name, last_name, department, salary)
+SELECT 'Timur', 'Zhakenov', 'Sales', 550000
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM employees
+    WHERE first_name = 'Timur'
+      AND last_name = 'Zhakenov'
 );
 
 
-CREATE TABLE professors (
-    professor_id SERIAL PRIMARY KEY,
-    first_name VARCHAR(50),
-    last_name VARCHAR(50),
-    email VARCHAR(100),
-    office_number VARCHAR(20),
-    hire_date DATE,
-    salary NUMERIC(12,2),
-    is_tenured BOOLEAN,
-    years_experience INTEGER
+-- Task 2: UPDATE with CASE
+UPDATE employees
+SET bonus_pct = CASE
+    WHEN salary > 800000 THEN 15
+    WHEN salary > 500000 THEN 10
+    ELSE 5
+END;
+
+
+-- Task 3: UPDATE with subquery
+UPDATE departments d
+SET budget = (
+    SELECT SUM(e.salary) * 1.20
+    FROM employees e
+    WHERE e.department = d.dept_name
+)
+WHERE EXISTS (
+    SELECT 1
+    FROM employees e
+    WHERE e.department = d.dept_name
 );
 
 
-CREATE TABLE courses (
-    course_id SERIAL PRIMARY KEY,
-    course_code CHAR(8),
-    course_title VARCHAR(100),
-    description TEXT,
-    credits SMALLINT,
-    max_enrollment INTEGER,
-    course_fee DECIMAL(10,2),
-    is_online BOOLEAN,
-    created_at TIMESTAMP WITHOUT TIME ZONE
-);
-
-
--- Task 2.2: Time-based and Specialized Tables
-
-
-CREATE TABLE class_schedule (
-    schedule_id SERIAL PRIMARY KEY,
-    course_id INTEGER,
-    professor_id INTEGER,
-    classroom VARCHAR(20),
-    class_date DATE,
-    start_time TIME WITHOUT TIME ZONE,
-    end_time TIME WITHOUT TIME ZONE,
-    duration INTERVAL
-);
-
-
-CREATE TABLE student_records (
-    record_id SERIAL PRIMARY KEY,
-    student_id INTEGER,
-    course_id INTEGER,
-    semester VARCHAR(20),
-    year INTEGER,
-    grade CHAR(2),
-    attendance_percentage DECIMAL(4,1),
-    submission_timestamp TIMESTAMP WITH TIME ZONE,
-    last_updated TIMESTAMP WITH TIME ZONE
-);
-
-
--- ============================================================
--- PART 3: ADVANCED ALTER TABLE OPERATIONS
--- ============================================================
-
--- Task 3.1: Modifying Existing Tables
-
-
--- Modify students table
-
-ALTER TABLE students
-ADD COLUMN middle_name VARCHAR(30);
-
-
-ALTER TABLE students
-ADD COLUMN student_status VARCHAR(20);
-
-
-ALTER TABLE students
-ALTER COLUMN phone TYPE VARCHAR(20);
-
-
-ALTER TABLE students
-ALTER COLUMN student_status SET DEFAULT 'ACTIVE';
-
-
-ALTER TABLE students
-ALTER COLUMN gpa SET DEFAULT 0.00;
-
-
--- Modify professors table
-
-ALTER TABLE professors
-ADD COLUMN department_code CHAR(5);
-
-
-ALTER TABLE professors
-ADD COLUMN research_area TEXT;
-
-
-ALTER TABLE professors
-ALTER COLUMN years_experience TYPE SMALLINT;
-
-
-ALTER TABLE professors
-ALTER COLUMN is_tenured SET DEFAULT FALSE;
-
-
-ALTER TABLE professors
-ADD COLUMN last_promotion_date DATE;
-
-
--- Modify courses table
-
-ALTER TABLE courses
-ADD COLUMN prerequisite_course_id INTEGER;
-
-
-ALTER TABLE courses
-ADD COLUMN difficulty_level SMALLINT;
-ALTER TABLE courses
-ALTER COLUMN course_code TYPE VARCHAR(10);
-
-
-ALTER TABLE courses
-ALTER COLUMN credits SET DEFAULT 3;
-
-
-ALTER TABLE courses
-ADD COLUMN lab_required BOOLEAN DEFAULT FALSE;
-
-
--- ============================================================
--- Task 3.2: Column Management Operations
--- ============================================================
-
--- Modify class_schedule table
-
-ALTER TABLE class_schedule
-ADD COLUMN room_capacity INTEGER;
-
-
-ALTER TABLE class_schedule
-DROP COLUMN duration;
-
-
-ALTER TABLE class_schedule
-ADD COLUMN session_type VARCHAR(15);
-
-
-ALTER TABLE class_schedule
-ALTER COLUMN classroom TYPE VARCHAR(30);
-
-
-ALTER TABLE class_schedule
-ADD COLUMN equipment_needed TEXT;
-
-
--- Modify student_records table
-
-ALTER TABLE student_records
-ADD COLUMN extra_credit_points DECIMAL(4,1);
-
-
-ALTER TABLE student_records
-ALTER COLUMN grade TYPE VARCHAR(5);
-
-
-ALTER TABLE student_records
-ALTER COLUMN extra_credit_points SET DEFAULT 0.0;
-
-
-ALTER TABLE student_records
-ADD COLUMN final_exam_date DATE;
-
-
-ALTER TABLE student_records
-DROP COLUMN last_updated;
-
-
--- ============================================================
--- PART 4: TABLE RELATIONSHIPS AND MANAGEMENT
--- ============================================================
-
--- Task 4.1: Additional Supporting Tables
-
-
-CREATE TABLE departments (
-    department_id SERIAL PRIMARY KEY,
-    department_name VARCHAR(100),
-    department_code CHAR(5),
-    building VARCHAR(50),
-    phone VARCHAR(15),
-    budget NUMERIC(15,2),
-    established_year INTEGER
-);
-
-
-CREATE TABLE library_books (
-    book_id SERIAL PRIMARY KEY,
-    isbn CHAR(13),
-    title VARCHAR(200),
-    author VARCHAR(100),
-    publisher VARCHAR(100),
-    publication_date DATE,
-    price DECIMAL(10,2),
-    is_available BOOLEAN,
-    acquisition_timestamp TIMESTAMP WITHOUT TIME ZONE
-);
-
-
-CREATE TABLE student_book_loans (
-    loan_id SERIAL PRIMARY KEY,
-    student_id INTEGER,
-    book_id INTEGER,
-    loan_date DATE,
-    due_date DATE,
-    return_date DATE,
-    fine_amount DECIMAL(10,2),
-    loan_status VARCHAR(20)
-);
-
-
--- Task 4.2: Table Modifications for Integration
-
--- Add department_id to professors
-
-ALTER TABLE professors
-ADD COLUMN department_id INTEGER;
-
-
--- Add advisor_id to students
-
-ALTER TABLE students
-ADD COLUMN advisor_id INTEGER;
-
-
--- Add department_id to courses
-
-ALTER TABLE courses
-ADD COLUMN department_id INTEGER;
-
-
--- Create grade_scale table
-
-CREATE TABLE grade_scale (
-    grade_id SERIAL PRIMARY KEY,
-    letter_grade CHAR(2),
-    min_percentage DECIMAL(4,1),
-    max_percentage DECIMAL(4,1),
-    gpa_points DECIMAL(3,2)
-);
-
-
--- Create semester_calendar table
-
-CREATE TABLE semester_calendar (
-    semester_id SERIAL PRIMARY KEY,
-    semester_name VARCHAR(20),
-    academic_year INTEGER,
-    start_date DATE,
-    end_date DATE,
-    registration_deadline TIMESTAMP WITH TIME ZONE,
-    is_current BOOLEAN
-);
-
-
--- ============================================================
--- PART 5: TABLE DELETION AND CLEANUP
--- ============================================================
-
--- Task 5.1: Conditional Table Operations
-
-
-DROP TABLE IF EXISTS student_book_loans;
-
-
-DROP TABLE IF EXISTS library_books;
-
-
-DROP TABLE IF EXISTS grade_scale;
-
-
--- Recreate grade_scale with description column
-
-CREATE TABLE grade_scale (
-    grade_id SERIAL PRIMARY KEY,
-    letter_grade CHAR(2),
-    min_percentage DECIMAL(4,1),
-    max_percentage DECIMAL(4,1),
-    gpa_points DECIMAL(3,2),
-    description TEXT
-);
-
-
--- Drop semester_calendar with CASCADE
-
-DROP TABLE IF EXISTS semester_calendar CASCADE;
-
-
--- Recreate semester_calendar
-
-CREATE TABLE semester_calendar (
-    semester_id SERIAL PRIMARY KEY,
-    semester_name VARCHAR(20),
-    academic_year INTEGER,
-    start_date DATE,
-    end_date DATE,
-    registration_deadline TIMESTAMP WITH TIME ZONE,
-    is_current BOOLEAN
-);
-
-
--- ============================================================
--- Task 5.2: DATABASE CLEANUP
--- ============================================================
-
--- These commands must be executed while connected
--- to another database, for example "postgres".
-DROP DATABASE IF EXISTS university_test;
-
-
-DROP DATABASE IF EXISTS university_distributed;
-
-
-CREATE DATABASE university_backup
-WITH
-    OWNER = CURRENT_USER
-    TEMPLATE = university_main;
-
-
+-- Task 4: Data migration, part 1
+CREATE TABLE employee_archive AS
+SELECT *
+FROM employees
+WHERE status = 'Inactive';
+
+
+-- Task 5: Data migration, part 2
+DELETE FROM employees
+WHERE status = 'Inactive'
+RETURNING emp_id, first_name  ' '  last_name AS full_name;

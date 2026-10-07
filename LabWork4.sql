@@ -235,3 +235,49 @@ GROUP BY e.department;
 -- ============================================
 -- END OF LABORATORY WORK 4
 -- ============================================
+
+
+
+task 1
+SELECT
+    first_name  ' '  last_name AS full_name,
+    COALESCE(phone, 'No phone') AS phone,
+    CASE
+        WHEN rating IS NULL THEN 'New'
+        WHEN rating >= 4.8 THEN 'Top'
+        WHEN rating >= 4.5 THEN 'Good'
+        ELSE 'Low'
+    END AS level
+FROM drivers;
+
+
+task 2
+SELECT
+    first_name,
+    city,
+    hire_date
+FROM drivers
+WHERE city IS DISTINCT FROM 'Almaty'
+  AND hire_date BETWEEN '2024-01-01' AND '2025-12-31';
+
+
+task 3
+SELECT
+    UPPER(last_name) AS last_name,
+    LEFT(phone, 5) AS operator_code,
+    EXTRACT(YEAR FROM AGE(CURRENT_DATE, hire_date)) AS full_years
+FROM drivers;
+
+
+
+task 5
+SELECT driver_id
+FROM drivers
+
+EXCEPT
+
+SELECT driver_id
+FROM rides
+WHERE status = 'Completed'
+
+ORDER BY driver_id;

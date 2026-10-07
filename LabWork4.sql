@@ -281,3 +281,16 @@ FROM rides
 WHERE status = 'Completed'
 
 ORDER BY driver_id;
+
+
+
+task 4
+SELECT
+    driver_id,
+    COUNT(*) AS number_of_rides,
+    SUM(fare) AS total_fare,
+    ROUND(AVG(COALESCE(tip, 0)), 2) AS average_tip
+FROM rides
+WHERE status = 'Completed'
+GROUP BY driver_id
+HAVING COUNT(*) >= 2;

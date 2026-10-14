@@ -512,3 +512,33 @@ ORDER BY od.order_id;
 -- Итог: все основные ограничения проверены примерами корректных данных
 -- и закомментированными запросами, которые при запуске по одному должны
 -- выдавать ошибки для демонстрации работы ограничений.
+
+
+-- Task 1: Создание таблицы courses
+CREATE TABLE courses (
+    course_id SERIAL PRIMARY KEY,
+    code TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    credits INTEGER NOT NULL
+        CHECK (credits BETWEEN 1 AND 6),
+    prerequisite_id INTEGER,
+    CONSTRAINT fk_prerequisite
+        FOREIGN KEY (prerequisite_id)
+        REFERENCES courses(course_id)
+);
+
+-- Task 2: Создание таблицы enrollments
+CREATE TABLE enrollments (
+    student_id INTEGER,
+    course_id INTEGER
+        REFERENCES courses(course_id)
+        ON DELETE CASCADE,
+    seat_no INTEGER NOT NULL
+        CHECK (seat_no > 0),
+    grade TEXT,
+    CONSTRAINT valid_grade
+        CHECK (grade IN ('A', 'B', 'C', 'D', 'F')
+               OR grade IS NULL),
+    PRIMARY KEY (student_id, course_id),
+    UNIQUE (course_id, seat_no)
+);

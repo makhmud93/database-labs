@@ -1,102 +1,46 @@
--- Task 1: Conditional INSERT
-INSERT INTO employees (first_name, last_name, department, salary)
-SELECT 'Timur', 'Zhakenov', 'Sales', 550000
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM employees
-    WHERE first_name = 'Timur'
-      AND last_name = 'Zhakenov'
+
+-- Task 1: Создание таблицы courses
+CREATE TABLE courses (
+    course_id SERIAL PRIMARY KEY,
+    code TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    credits INTEGER NOT NULL
+        CHECK (credits BETWEEN 1 AND 6),
+    prerequisite_id INTEGER,
+    CONSTRAINT fk_prerequisite
+        FOREIGN KEY (prerequisite_id)
+        REFERENCES courses(course_id)
 );
-
-
--- Task 2: UPDATE with CASE
-UPDATE employees
-SET bonus_pct = CASE
-    WHEN salary > 800000 THEN 15
-    WHEN salary > 500000 THEN 10
-    ELSE 5
-END;
-
-
--- Task 3: UPDATE with subquery
-UPDATE departments d
-SET budget = (
-    SELECT SUM(e.salary) * 1.20
-    FROM employees e
-    WHERE e.department = d.dept_name
-)
-WHERE EXISTS (
-    SELECT 1
-    FROM employees e
-    WHERE e.department = d.dept_name
+-- Task 2: Создание таблицы enrollments
+CREATE TABLE enrollments (
+    student_id INTEGER,
+    course_id INTEGER
+        REFERENCES courses(course_id)
+        ON DELETE CASCADE,
+    seat_no INTEGER NOT NULL
+        CHECK (seat_no > 0),
+    grade TEXT,
+    CONSTRAINT valid_grade
+        CHECK (grade IN ('A', 'B', 'C', 'D', 'F')
+               OR grade IS NULL),
+    PRIMARY KEY (student_id, course_id),
+    UNIQUE (course_id, seat_no)
 );
-
-
--- Task 4: Data migration, part 1
-CREATE TABLE employee_archive AS
-SELECT *
-FROM employees
-WHERE status = 'Inactive';
-
-
--- Task 5: Data migration, part 2
-DELETE FROM employees
-WHERE status = 'Inactive'
-RETURNING emp_id, first_name  ' '  last_name AS full_name;
-
-
-
-
--- TASK 1: INSERT with expressions
-
-INSERT INTO projects
-    (project_name, budget, start_date, end_date, total_tasks, done_tasks)
-VALUES
-    ('Mobile App',
-     400000 * 1.25,
-     CURRENT_DATE,
-     CURRENT_DATE + 90,
-     12,
-     0)
-RETURNING project_id, budget, start_date, end_date;
-
-
--- TASK 2: UPDATE with NULL
-
-UPDATE team_members
-SET status = 'Unassigned'
-WHERE project_id IS NULL
-RETURNING full_name, status;
-
-
--- TASK 3: UPDATE with arithmetic
-
-UPDATE projects
-SET completion_pct = CASE
-    WHEN total_tasks = 0 THEN 0
-    ELSE ROUND(done_tasks * 100.0 / total_tasks, 1)
-END;
-
-
--- TASK 4: UPDATE with subquery
-
-UPDATE projects p
-SET end_date = p.end_date + 30
-WHERE p.budget > 500000
-  AND (
-      SELECT COUNT(*)
-      FROM team_members t
-      WHERE t.project_id = p.project_id
-  ) > 2
-RETURNING project_name, end_date;
-
-
--- TASK 5: DELETE with subquery
-
-DELETE FROM team_members t
-WHERE t.project_id IN (
-    SELECT p.project_id
-    FROM projects p
-    WHERE p.end_date < DATE '2026-01-01'
-)
-RETURNING *;
+Task 3. Правильные ответы
+Согласно таблицам и порядку выполнения операций на странице 1 PDF:
+№ Ответ Объяснение
+A OK Код курса уникален, кредиты равны 6 — допустимо.
+B Ошибка: foreign key prerequisite_id = 6, но курса с course_id = 6 нет.
+C Ошибка: UNIQUE Места станут 2, 3, 4. Для курса 3 место 2 уже занято студентом 1002.
+D Ошибка: NOT NULL Нельзя добавить столбец teacher TEXT NOT NULL без значения по умолчанию в непустую таблицу.
+E Ошибка: foreign key Нельзя удалить курс 2, поскольку курс 3 ссылается на него через prerequisite_id.
+F OK Курс 3 удаляется, связанные записи в enrollments удаляются благодаря ON DELETE CASCADE.
+Важный нюанс для Task C
+PostgreSQL проверяет ограничение уникальности для обновляемых строк. При выполнении одного UPDATE с увеличением всех мест на 1 возможен конфликт с ещё не обновлённой строкой — поэтому операция может завершиться ошибкой UNIQUE.
+Итог для листа ответов:
+A — OK
+B — Foreign key violation
+C — Unique constraint violation
+D — NOT NULL violation
+E — Foreign key violation
+F — OK
